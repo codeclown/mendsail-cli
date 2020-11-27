@@ -6,6 +6,7 @@ Command line tool to quickly send formatted email.
 
 ```bash
 mendsail send
+  --api-key XXXX-XXXX-XXXX-XXXX
   --to [email_address]
   --subject [subject]
   [--add-heading <text>]
@@ -21,6 +22,7 @@ Send error notifications from scripts:
 
 ```bash
 mendsail send \
+  --api-key XXXX-XXXX-XXXX-XXXX \
   --to you@example.com \
   --subject "Error in cronjob.sh" \
   --add-heading "Data processing failed" \
@@ -32,6 +34,7 @@ Send email with various types of content:
 
 ```bash
 mendsail send \
+  --api-key XXXX-XXXX-XXXX-XXXX \
   --to you@example.com \
   --subject "New domains ($(date))" \
   --add-heading "New domains ($(date))" \

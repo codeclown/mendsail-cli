@@ -15,6 +15,7 @@ type sendBlock struct {
 }
 
 type sendOptions struct {
+	apiKey  string
 	to      string
 	subject string
 	blocks  []sendBlock
@@ -39,6 +40,8 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 		value := args[i+1]
 
 		switch arg {
+		case "--api-key":
+			options.apiKey = value
 		case "--to":
 			options.to = value
 		case "--subject":
@@ -56,6 +59,19 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 
 	options.blocks = blocks
 	return &options, nil
+}
+
+func validateSendOptions(options sendOptions) error {
+	if options.apiKey == "" {
+		return errors.New("missing option: --api-key")
+	}
+	if options.to == "" {
+		return errors.New("missing option: --to")
+	}
+	if options.subject == "" {
+		return errors.New("missing option: --subject")
+	}
+	return nil
 }
 
 type BlockPayload struct {
@@ -100,13 +116,21 @@ func runSend(args []string) error {
 	if err1 != nil {
 		return nil
 	}
-	payload, err2 := sendOptionsToJsonPayload(*options)
+
+	err2 := validateSendOptions(*options)
 	if err2 != nil {
 		return nil
 	}
-	err3 := postJson("https://reqres.in/api/users", payload)
+
+	payload, err3 := sendOptionsToJsonPayload(*options)
 	if err3 != nil {
 		return nil
 	}
+
+	err4 := postJson("https://reqres.in/api/users", options.apiKey, payload)
+	if err4 != nil {
+		return nil
+	}
+
 	return nil
 }

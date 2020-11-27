@@ -34,6 +34,7 @@ func exceptOptions(t *testing.T, expected sendOptions, actual *sendOptions, err 
 func Test_parseSendArgs_Empty(t *testing.T) {
 	var args []string
 	expected := sendOptions{
+		apiKey:  "",
 		to:      "",
 		subject: "",
 		blocks:  []sendBlock{},
@@ -44,10 +45,12 @@ func Test_parseSendArgs_Empty(t *testing.T) {
 
 func Test_parseSendArgs_Basic(t *testing.T) {
 	args := []string{
+		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
 	}
 	expected := sendOptions{
+		apiKey:  "foobar-123",
 		to:      "foobar@example.com",
 		subject: "example 123",
 		blocks:  []sendBlock{},
@@ -58,6 +61,7 @@ func Test_parseSendArgs_Basic(t *testing.T) {
 
 func Test_parseSendArgs_UnknownOption(t *testing.T) {
 	args := []string{
+		"--api-key", "foobar-123",
 		"--foobar", "foobar@example.com",
 		"--subject", "example 123",
 	}
@@ -67,6 +71,7 @@ func Test_parseSendArgs_UnknownOption(t *testing.T) {
 
 func Test_parseSendArgs_MissingValue(t *testing.T) {
 	args := []string{
+		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
 		"--subject",
 	}
@@ -76,6 +81,7 @@ func Test_parseSendArgs_MissingValue(t *testing.T) {
 
 func Test_parseSendArgs_BlockTypes(t *testing.T) {
 	args := []string{
+		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
 		"--add-heading", "Data processing failed",
@@ -83,6 +89,7 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 		"--add-code-block", "foobar",
 	}
 	expected := sendOptions{
+		apiKey:  "foobar-123",
 		to:      "foobar@example.com",
 		subject: "example 123",
 		blocks: []sendBlock{
@@ -97,6 +104,7 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 
 func Test_parseSendArgs_BlockOrder(t *testing.T) {
 	args := []string{
+		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
 		"--add-heading", "heading 1",
@@ -108,6 +116,7 @@ func Test_parseSendArgs_BlockOrder(t *testing.T) {
 		"--add-paragraph", "paragraph 3",
 	}
 	expected := sendOptions{
+		apiKey:  "foobar-123",
 		to:      "foobar@example.com",
 		subject: "example 123",
 		blocks: []sendBlock{
@@ -124,8 +133,49 @@ func Test_parseSendArgs_BlockOrder(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
+func Test_validateSendOptions_Valid(t *testing.T) {
+	options := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "foobar@example.com",
+		subject: "example 123",
+	}
+	err := validateSendOptions(options)
+	expectNoError(t, err)
+}
+
+func Test_validateSendOptions_ApiKey(t *testing.T) {
+	options := sendOptions{
+		apiKey:  "",
+		to:      "foobar@example.com",
+		subject: "example 123",
+	}
+	err := validateSendOptions(options)
+	expectError(t, "missing option: --api-key", err)
+}
+
+func Test_validateSendOptions_To(t *testing.T) {
+	options := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "",
+		subject: "example 123",
+	}
+	err := validateSendOptions(options)
+	expectError(t, "missing option: --to", err)
+}
+
+func Test_validateSendOptions_Subject(t *testing.T) {
+	options := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "foobar@example.com",
+		subject: "",
+	}
+	err := validateSendOptions(options)
+	expectError(t, "missing option: --subject", err)
+}
+
 func Test_sendOptionsToJsonPayload_works(t *testing.T) {
 	options := sendOptions{
+		apiKey:  "foobar-123",
 		to:      "foobar@example.com",
 		subject: "example 123",
 		blocks: []sendBlock{

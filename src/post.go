@@ -7,10 +7,10 @@ import (
 	"net/http"
 )
 
-func postJson(url string, json []byte) error {
+func postJson(url string, apiKey string, json []byte) error {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
 	req.Header.Set("Content-Type", "application/json")
-	// req.Header.Set("X-Custom-Header", "myvalue")
+	req.Header.Set("X-API-KEY", apiKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
