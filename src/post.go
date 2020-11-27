@@ -2,15 +2,16 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 )
 
 func postJson(url string, apiKey string, json []byte) error {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-API-KEY", apiKey)
+	req.Header.Set("user-agent", "mendsail-cli/1.0")
+	req.Header.Set("content-type", "application/json")
+	req.Header.Set("x-api-key", apiKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -19,7 +20,15 @@ func postJson(url string, apiKey string, json []byte) error {
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	body, bodyErr := ioutil.ReadAll(resp.Body)
+
+	if resp.Status[0] != '2' {
+		response := ""
+		if bodyErr == nil {
+			response = "\n" + string(body)
+		}
+		return errors.New("Server returned error: " + resp.Status + response)
+	}
+
 	return nil
 }

@@ -114,22 +114,22 @@ type runSendType func(args []string) error
 func runSend(args []string) error {
 	options, err1 := parseSendArgs(args)
 	if err1 != nil {
-		return nil
+		return err1
 	}
 
 	err2 := validateSendOptions(*options)
 	if err2 != nil {
-		return nil
+		return err2
 	}
 
 	payload, err3 := sendOptionsToJsonPayload(*options)
 	if err3 != nil {
-		return nil
+		return err3
 	}
 
 	err4 := postJson("https://reqres.in/api/users", options.apiKey, payload)
 	if err4 != nil {
-		return nil
+		return err4
 	}
 
 	return nil
