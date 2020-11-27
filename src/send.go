@@ -1,8 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 )
+
+const BlockTypeHeading = "Heading"
+const BlockTypeParagraph = "Paragraph"
+const BlockTypeCodeBlock = "CodeBlock"
 
 type sendBlock struct {
 	blockType string
@@ -20,9 +25,9 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 	blocks := make([]sendBlock, 0)
 
 	optionToBlockType := make(map[string]string)
-	optionToBlockType["--add-heading"] = "Heading"
-	optionToBlockType["--add-paragraph"] = "Paragraph"
-	optionToBlockType["--add-code-block"] = "CodeBlock"
+	optionToBlockType["--add-heading"] = BlockTypeHeading
+	optionToBlockType["--add-paragraph"] = BlockTypeParagraph
+	optionToBlockType["--add-code-block"] = BlockTypeCodeBlock
 
 	for i := 0; i < len(args); i += 2 {
 		arg := args[i]
@@ -53,10 +58,55 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 	return &options, nil
 }
 
+type BlockPayload struct {
+	BlockType string `json:"type"`
+	Text      string `json:"text,omitempty"`
+}
+
+type AsdPayload struct {
+	To      string         `json:"to"`
+	Subject string         `json:"subject"`
+	Blocks  []BlockPayload `json:"blocks"`
+}
+
+func sendOptionsToJsonPayload(options sendOptions) ([]byte, error) {
+	blocks := []BlockPayload{}
+	for _, block := range options.blocks {
+		blockPayload := BlockPayload{
+			BlockType: block.blockType,
+		}
+		switch block.blockType {
+		case BlockTypeHeading:
+			blockPayload.Text = block.text
+		case BlockTypeParagraph:
+			blockPayload.Text = block.text
+		case BlockTypeCodeBlock:
+			blockPayload.Text = block.text
+		}
+		blocks = append(blocks, blockPayload)
+	}
+	payload := AsdPayload{
+		To:      options.to,
+		Subject: options.subject,
+		Blocks:  blocks,
+	}
+	return json.Marshal(payload)
+}
+
 type runSendType func(args []string) error
 
 func runSend(args []string) error {
-	// err, options := parseSendArgs(args)
-	// fmt.Println(options)
+	options, err1 := parseSendArgs(args)
+	if err1 != nil {
+		return nil
+	}
+	payload, err2 := sendOptionsToJsonPayload(*options)
+	if err2 != nil {
+		return nil
+	}
+	err3 := postJson("https://reqres.in/api/users", payload)
+	if err3 != nil {
+		return nil
+	}
 	return nil
 }

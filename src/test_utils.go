@@ -2,6 +2,13 @@ package main
 
 import "testing"
 
+func exceptStringsEqual(t *testing.T, expected string, actual string) {
+	if actual != expected {
+		t.Errorf("exceptStringsEqual: expected=%s actual=%s", expected, actual)
+		t.FailNow()
+	}
+}
+
 func expectNoError(t *testing.T, err error) {
 	if err != nil {
 		t.Errorf("err: expected=nil actual=%s", err)

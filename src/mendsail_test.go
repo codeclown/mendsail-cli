@@ -10,19 +10,19 @@ func dummyRunSend(args []string) error {
 	return nil
 }
 
-func Test_RunMain_NoArgs(t *testing.T) {
+func Test_runMain_NoArgs(t *testing.T) {
 	var args []string
 	err := runMain(args, dummyRunSend)
 	expectError(t, "expected a subcommand (e.g. 'mendsail send ...')", err)
 }
 
-func Test_RunMain_UnknownCommand(t *testing.T) {
+func Test_runMain_UnknownCommand(t *testing.T) {
 	args := []string{"foobar"}
 	err := runMain(args, dummyRunSend)
 	expectError(t, "expected a subcommand (e.g. 'mendsail send ...')", err)
 }
 
-func Test_RunMain_CallsRunSend(t *testing.T) {
+func Test_runMain_CallsRunSend(t *testing.T) {
 	var calledWith []string
 	mockRunSend := func(args []string) error {
 		calledWith = args

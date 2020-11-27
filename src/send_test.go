@@ -31,7 +31,7 @@ func exceptOptions(t *testing.T, expected sendOptions, actual *sendOptions, err 
 	}
 }
 
-func Test_ParseSendArgs_Empty(t *testing.T) {
+func Test_parseSendArgs_Empty(t *testing.T) {
 	var args []string
 	expected := sendOptions{
 		to:      "",
@@ -42,7 +42,7 @@ func Test_ParseSendArgs_Empty(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func Test_ParseSendArgs_Basic(t *testing.T) {
+func Test_parseSendArgs_Basic(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
@@ -56,7 +56,7 @@ func Test_ParseSendArgs_Basic(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func Test_ParseSendArgs_UnknownOption(t *testing.T) {
+func Test_parseSendArgs_UnknownOption(t *testing.T) {
 	args := []string{
 		"--foobar", "foobar@example.com",
 		"--subject", "example 123",
@@ -65,7 +65,7 @@ func Test_ParseSendArgs_UnknownOption(t *testing.T) {
 	expectError(t, "Unrecognized option: --foobar", err)
 }
 
-func Test_ParseSendArgs_MissingValue(t *testing.T) {
+func Test_parseSendArgs_MissingValue(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject",
@@ -74,7 +74,7 @@ func Test_ParseSendArgs_MissingValue(t *testing.T) {
 	expectError(t, "Missing value for --subject", err)
 }
 
-func Test_ParseSendArgs_BlockTypes(t *testing.T) {
+func Test_parseSendArgs_BlockTypes(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
@@ -95,7 +95,7 @@ func Test_ParseSendArgs_BlockTypes(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func Test_ParseSendArgs_BlockOrder(t *testing.T) {
+func Test_parseSendArgs_BlockOrder(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
@@ -122,4 +122,36 @@ func Test_ParseSendArgs_BlockOrder(t *testing.T) {
 	}
 	actual, err := parseSendArgs(args)
 	exceptOptions(t, expected, actual, err)
+}
+
+func Test_sendOptionsToJsonPayload_works(t *testing.T) {
+	options := sendOptions{
+		to:      "foobar@example.com",
+		subject: "example 123",
+		blocks: []sendBlock{
+			sendBlock{blockType: "Heading", text: "heading 1"},
+			sendBlock{blockType: "Paragraph", text: "paragraph 1"},
+			sendBlock{blockType: "Paragraph", text: "paragraph 2"},
+			sendBlock{blockType: "CodeBlock", text: "code block 1"},
+			sendBlock{blockType: "CodeBlock", text: "code block 2"},
+			sendBlock{blockType: "Heading", text: "heading 2"},
+			sendBlock{blockType: "Paragraph", text: "paragraph 3"},
+		},
+	}
+	expected := "{" +
+		"\"to\":\"foobar@example.com\"," +
+		"\"subject\":\"example 123\"," +
+		"\"blocks\":[" +
+		"{\"type\":\"Heading\",\"text\":\"heading 1\"}," +
+		"{\"type\":\"Paragraph\",\"text\":\"paragraph 1\"}," +
+		"{\"type\":\"Paragraph\",\"text\":\"paragraph 2\"}," +
+		"{\"type\":\"CodeBlock\",\"text\":\"code block 1\"}," +
+		"{\"type\":\"CodeBlock\",\"text\":\"code block 2\"}," +
+		"{\"type\":\"Heading\",\"text\":\"heading 2\"}," +
+		"{\"type\":\"Paragraph\",\"text\":\"paragraph 3\"}" +
+		"]" +
+		"}"
+	actual, err := sendOptionsToJsonPayload(options)
+	expectNoError(t, err)
+	exceptStringsEqual(t, expected, string(actual))
 }
