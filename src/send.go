@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 )
 
 type sendBlock struct {
@@ -54,6 +53,10 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 	return &options, nil
 }
 
-func runSend(options sendOptions) {
-	fmt.Println(options)
+type runSendType func(args []string) error
+
+func runSend(args []string) error {
+	// err, options := parseSendArgs(args)
+	// fmt.Println(options)
+	return nil
 }

@@ -4,17 +4,6 @@ import (
 	"testing"
 )
 
-func expectError(t *testing.T, expected string, err error) {
-	if err == nil {
-		t.Errorf("err: expected=%s actual=nil", expected)
-		t.FailNow()
-	}
-	if err.Error() != expected {
-		t.Errorf("err: expected=%s actual=%s", expected, err)
-		t.FailNow()
-	}
-}
-
 func exceptOptions(t *testing.T, expected sendOptions, actual *sendOptions, err error) {
 	if err != nil {
 		t.Errorf("err: expected=nil actual=%s", err)
@@ -42,7 +31,7 @@ func exceptOptions(t *testing.T, expected sendOptions, actual *sendOptions, err 
 	}
 }
 
-func TestParseSendArgsEmpty(t *testing.T) {
+func Test_ParseSendArgs_Empty(t *testing.T) {
 	var args []string
 	expected := sendOptions{
 		to:      "",
@@ -53,7 +42,7 @@ func TestParseSendArgsEmpty(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func TestParseSendArgsBasic(t *testing.T) {
+func Test_ParseSendArgs_Basic(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
@@ -67,7 +56,7 @@ func TestParseSendArgsBasic(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func TestParseSendArgsUnknownOption(t *testing.T) {
+func Test_ParseSendArgs_UnknownOption(t *testing.T) {
 	args := []string{
 		"--foobar", "foobar@example.com",
 		"--subject", "example 123",
@@ -76,7 +65,7 @@ func TestParseSendArgsUnknownOption(t *testing.T) {
 	expectError(t, "Unrecognized option: --foobar", err)
 }
 
-func TestParseSendArgsMissingValue(t *testing.T) {
+func Test_ParseSendArgs_MissingValue(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject",
@@ -85,7 +74,7 @@ func TestParseSendArgsMissingValue(t *testing.T) {
 	expectError(t, "Missing value for --subject", err)
 }
 
-func TestParseSendArgsBlockTypes(t *testing.T) {
+func Test_ParseSendArgs_BlockTypes(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
@@ -106,7 +95,7 @@ func TestParseSendArgsBlockTypes(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func TestParseSendArgsBlockOrder(t *testing.T) {
+func Test_ParseSendArgs_BlockOrder(t *testing.T) {
 	args := []string{
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
