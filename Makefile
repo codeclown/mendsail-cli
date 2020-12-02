@@ -1,5 +1,8 @@
+OUT ?= mendsail
+LIBS = src/mendsail.go src/send.go src/post.go
+
 build:
-	go build -o bin src/mendsail.go src/send.go src/post.go
+	mkdir -p bin && go build -o bin/$(OUT) $(LIBS)
 
 test:
 	go test ./...
