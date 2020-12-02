@@ -17,3 +17,14 @@ make build && ./bin/mendsail send \
   --paragraph "Log output:" \
   --code-block "foobar"
 ```
+
+## Release process
+
+Add a tag in the format of `v[X.X.X]` and GitHub will automatically prepare a release.
+
+```bash
+git tag v1.0.0
+git push --tags
+```
+
+Approve and publish it under [Releases](https://github.com/codeclown/mendsail-cli/releases).
