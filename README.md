@@ -8,4 +8,4 @@ Documentation is available at:
 
 ## License
 
-The contends of this repository are released to the public under GPLv3.
+The contents of this repository are released to the public under GPLv3.
