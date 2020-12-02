@@ -84,9 +84,9 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
-		"--add-heading", "Data processing failed",
-		"--add-paragraph", "Log output:",
-		"--add-code-block", "foobar",
+		"--heading", "Data processing failed",
+		"--paragraph", "Log output:",
+		"--code-block", "foobar",
 	}
 	expected := sendOptions{
 		apiKey:  "foobar-123",
@@ -107,13 +107,13 @@ func Test_parseSendArgs_BlockOrder(t *testing.T) {
 		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
 		"--subject", "example 123",
-		"--add-heading", "heading 1",
-		"--add-paragraph", "paragraph 1",
-		"--add-paragraph", "paragraph 2",
-		"--add-code-block", "code block 1",
-		"--add-code-block", "code block 2",
-		"--add-heading", "heading 2",
-		"--add-paragraph", "paragraph 3",
+		"--heading", "heading 1",
+		"--paragraph", "paragraph 1",
+		"--paragraph", "paragraph 2",
+		"--code-block", "code block 1",
+		"--code-block", "code block 2",
+		"--heading", "heading 2",
+		"--paragraph", "paragraph 3",
 	}
 	expected := sendOptions{
 		apiKey:  "foobar-123",

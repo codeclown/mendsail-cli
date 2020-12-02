@@ -3,11 +3,14 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 const BlockTypeHeading = "Heading"
 const BlockTypeParagraph = "Paragraph"
 const BlockTypeCodeBlock = "CodeBlock"
+
+const apiEndpoint = "https://api.mendsail.com/v1/emails"
 
 type sendBlock struct {
 	blockType string
@@ -26,9 +29,9 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 	blocks := make([]sendBlock, 0)
 
 	optionToBlockType := make(map[string]string)
-	optionToBlockType["--add-heading"] = BlockTypeHeading
-	optionToBlockType["--add-paragraph"] = BlockTypeParagraph
-	optionToBlockType["--add-code-block"] = BlockTypeCodeBlock
+	optionToBlockType["--heading"] = BlockTypeHeading
+	optionToBlockType["--paragraph"] = BlockTypeParagraph
+	optionToBlockType["--code-block"] = BlockTypeCodeBlock
 
 	for i := 0; i < len(args); i += 2 {
 		arg := args[i]
@@ -46,7 +49,7 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 			options.to = value
 		case "--subject":
 			options.subject = value
-		case "--add-heading", "--add-paragraph", "--add-code-block":
+		case "--heading", "--paragraph", "--code-block":
 			blockType := optionToBlockType[arg]
 			blocks = append(blocks, sendBlock{
 				blockType: blockType,
@@ -79,7 +82,7 @@ type BlockPayload struct {
 	Text      string `json:"text,omitempty"`
 }
 
-type AsdPayload struct {
+type FullPayload struct {
 	To      string         `json:"to"`
 	Subject string         `json:"subject"`
 	Blocks  []BlockPayload `json:"blocks"`
@@ -101,7 +104,7 @@ func sendOptionsToJsonPayload(options sendOptions) ([]byte, error) {
 		}
 		blocks = append(blocks, blockPayload)
 	}
-	payload := AsdPayload{
+	payload := FullPayload{
 		To:      options.to,
 		Subject: options.subject,
 		Blocks:  blocks,
@@ -127,10 +130,12 @@ func runSend(args []string) error {
 		return err3
 	}
 
-	err4 := postJson("https://reqres.in/api/users", options.apiKey, payload)
+	err4 := postJson(apiEndpoint, options.apiKey, payload)
 	if err4 != nil {
 		return err4
 	}
+
+	fmt.Println("Email sent successfully.")
 
 	return nil
 }

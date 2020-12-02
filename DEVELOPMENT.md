@@ -1,12 +1,19 @@
 # Development
 
+## Tests
+
+```bash
+make test
+```
+
 ## Build and run
 
 ```bash
 make build && ./bin/mendsail send \
+  --api-key XXXX-XXXX-XXXX-XXXX \
   --to you@example.com \
   --subject "Error in cronjob.sh" \
-  --add-heading "Data processing failed" \
-  --add-paragraph "Log output:" \
-  --add-code-block "foobar"
+  --heading "Data processing failed" \
+  --paragraph "Log output:" \
+  --code-block "foobar"
 ```
