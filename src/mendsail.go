@@ -19,6 +19,8 @@ func showHelp() error {
 		"Blocks:\n" +
 		"  --heading            <text>\n" +
 		"  --paragraph          <text>\n" +
+		"  --list               <item1> <item2> ... <itemN>\n" +
+		"  --image              <url> [alt:text] [width:number]\n" +
 		"  --code-block         <text>\n" +
 		"\n" +
 		"Other options:\n" +
