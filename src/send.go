@@ -173,12 +173,15 @@ func sendOptionsToJsonPayload(options sendOptions) ([]byte, error) {
 	return json.Marshal(payload)
 }
 
-func getApiEndpoint() string {
-	apiBaseUrl := strings.Trim(os.Getenv("MENDSAIL_BASE_URL"), "/")
-	if apiBaseUrl == "" {
-		apiBaseUrl = "https://api.mendsail.com/v1"
+func envOrDevault(envName string, defaultValue string, preferDefault bool) string {
+	if preferDefault && defaultValue != "" {
+		return defaultValue
 	}
-	return apiBaseUrl + "/emails"
+	fromEnv := os.Getenv(envName)
+	if fromEnv == "" {
+		return defaultValue
+	}
+	return fromEnv
 }
 
 type runSendType func(args []string) error
@@ -188,6 +191,10 @@ func runSend(args []string) error {
 	if err1 != nil {
 		return err1
 	}
+
+	options.apiKey = envOrDevault("MENDSAIL_API_KEY", options.apiKey, true)
+	options.to = envOrDevault("MENDSAIL_TO", options.to, true)
+	options.subject = envOrDevault("MENDSAIL_SUBJECT", options.subject, true)
 
 	err2 := validateSendOptions(*options)
 	if err2 != nil {
@@ -199,7 +206,9 @@ func runSend(args []string) error {
 		return err3
 	}
 
-	apiEndpoint := getApiEndpoint()
+	apiBaseUrl := envOrDevault("MENDSAIL_BASE_URL", "https://api.mendsail.com/v1", false)
+	apiBaseUrl = strings.Trim(apiBaseUrl, "/")
+	apiEndpoint := apiBaseUrl + "/emails"
 
 	err4 := postJson(apiEndpoint, options.apiKey, payload)
 	if err4 != nil {

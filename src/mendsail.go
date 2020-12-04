@@ -23,6 +23,9 @@ func showHelp() error {
 		"  --image              <url> [alt:text] [width:number]\n" +
 		"  --code-block         <text>\n" +
 		"\n" +
+		"Supported environment variables:\n" +
+		"  MENDSAIL_API_KEY MENDSAIL_TO MENDSAIL_SUBJECT\n" +
+		"\n" +
 		"Other options:\n" +
 		"  --help               Show this help message\n" +
 		"\n" +
