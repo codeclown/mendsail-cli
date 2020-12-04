@@ -107,7 +107,9 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 		"--paragraph", "Log output:",
 		"--list", "List item 1",
 		"--image", "https://example.com/image.png",
-		"--code-block", "foobar",
+		"--code-block", "code 1",
+		"--alert", "alert 1",
+		"--link", "https://example.com",
 	}
 	expected := sendOptions{
 		apiKey:  "foobar-123",
@@ -118,7 +120,9 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 			sendBlock{blockType: "Paragraph", text: "Log output:"},
 			sendBlock{blockType: "List", items: []string{"List item 1"}},
 			sendBlock{blockType: "Image", url: "https://example.com/image.png"},
-			sendBlock{blockType: "CodeBlock", text: "foobar"},
+			sendBlock{blockType: "CodeBlock", text: "code 1"},
+			sendBlock{blockType: "Alert", text: "alert 1", style: "info"},
+			sendBlock{blockType: "Link", url: "https://example.com", text: "https://example.com"},
 		},
 	}
 	actual, err := parseSendArgs(args)
@@ -220,6 +224,68 @@ func Test_parseSendArgs_UnknownImageOption(t *testing.T) {
 	expectError(t, "unknown option: 'foobar:Alt text'", err)
 }
 
+func Test_parseSendArgs_AlertOptions(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--alert", "lorem ipsum", "style:danger",
+	}
+	expected := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "foobar@example.com",
+		subject: "example 123",
+		blocks: []sendBlock{
+			sendBlock{blockType: "Alert", text: "lorem ipsum", style: "danger"},
+		},
+	}
+	actual, err := parseSendArgs(args)
+	expectNoError(t, err)
+	exceptOptions(t, expected, actual, err)
+}
+
+func Test_parseSendArgs_UnknownAlertOption(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--alert", "lorem ipsum", "foobar:danger",
+	}
+	_, err := parseSendArgs(args)
+	expectError(t, "unknown option: 'foobar:danger'", err)
+}
+
+func Test_parseSendArgs_InvalidAlertStyle(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--alert", "lorem ipsum", "style:foobar",
+	}
+	_, err := parseSendArgs(args)
+	expectError(t, "invalid style: 'foobar' (should be one of: success, warning, danger, info)", err)
+}
+
+func Test_parseSendArgs_LinkText(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--link", "https://example.com", "text foobar",
+	}
+	expected := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "foobar@example.com",
+		subject: "example 123",
+		blocks: []sendBlock{
+			sendBlock{blockType: "Link", url: "https://example.com", text: "text foobar"},
+		},
+	}
+	actual, err := parseSendArgs(args)
+	expectNoError(t, err)
+	exceptOptions(t, expected, actual, err)
+}
+
 func Test_validateSendOptions_Valid(t *testing.T) {
 	options := sendOptions{
 		apiKey:  "foobar-123",
@@ -276,6 +342,8 @@ func Test_sendOptionsToJsonPayload_works(t *testing.T) {
 			sendBlock{blockType: "List", items: []string{"item 1", "item 2"}},
 			sendBlock{blockType: "Image", url: "image.png"},
 			sendBlock{blockType: "Image", url: "image.png", alt: "alt text", width: 123},
+			sendBlock{blockType: "Alert", text: "alert 1", style: "info"},
+			sendBlock{blockType: "Link", url: "https://example.com", text: "lorem ipsum"},
 		},
 	}
 	expected := "{" +
@@ -291,7 +359,9 @@ func Test_sendOptionsToJsonPayload_works(t *testing.T) {
 		"{\"type\":\"Paragraph\",\"text\":\"paragraph 3\"}," +
 		"{\"type\":\"List\",\"items\":[\"item 1\",\"item 2\"]}," +
 		"{\"type\":\"Image\",\"url\":\"image.png\"}," +
-		"{\"type\":\"Image\",\"url\":\"image.png\",\"alt\":\"alt text\",\"width\":123}" +
+		"{\"type\":\"Image\",\"url\":\"image.png\",\"alt\":\"alt text\",\"width\":123}," +
+		"{\"type\":\"Alert\",\"text\":\"alert 1\",\"style\":\"info\"}," +
+		"{\"type\":\"Link\",\"text\":\"lorem ipsum\",\"url\":\"https://example.com\"}" +
 		"]" +
 		"}"
 	actual, err := sendOptionsToJsonPayload(options)

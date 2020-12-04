@@ -14,12 +14,15 @@ const BlockTypeParagraph = "Paragraph"
 const BlockTypeList = "List"
 const BlockTypeImage = "Image"
 const BlockTypeCodeBlock = "CodeBlock"
+const BlockTypeAlert = "Alert"
+const BlockTypeLink = "Link"
 
 type sendBlock struct {
 	blockType string
 	text      string
 	items     []string
 	url       string
+	style     string
 	alt       string
 	width     int
 }
@@ -41,6 +44,8 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 	optionToBlockType["--list"] = BlockTypeList
 	optionToBlockType["--image"] = BlockTypeImage
 	optionToBlockType["--code-block"] = BlockTypeCodeBlock
+	optionToBlockType["--alert"] = BlockTypeAlert
+	optionToBlockType["--link"] = BlockTypeLink
 
 	for i := 0; i < len(args); i += 2 {
 		arg := args[i]
@@ -106,6 +111,44 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 			}
 			blocks = append(blocks, imageBlock)
 			i += len(imageOptions)
+		case "--alert":
+			blockType := optionToBlockType[arg]
+			alertOptions := make([]string, 0)
+			for k := i + 2; k < len(args); k += 1 {
+				if strings.HasPrefix(args[k], "--") || !strings.Contains(args[k], ":") {
+					break
+				}
+				alertOptions = append(alertOptions, args[k])
+			}
+			alertBlock := sendBlock{
+				blockType: blockType,
+				text:      value,
+			}
+			for _, arg := range alertOptions {
+				if strings.HasPrefix(arg, "style:") {
+					style := arg[6:]
+					if style != "success" && style != "warning" && style != "danger" && style != "info" {
+						return nil, errors.New("invalid style: '" + style + "' (should be one of: success, warning, danger, info)")
+					}
+					alertBlock.style = style
+				} else {
+					return nil, errors.New("unknown option: '" + arg + "'")
+				}
+			}
+			blocks = append(blocks, alertBlock)
+			i += len(alertOptions)
+		case "--link":
+			blockType := optionToBlockType[arg]
+			text := value
+			if i < len(args)-2 && !strings.HasPrefix(args[i+2], "-") {
+				text = args[i+2]
+				i += 1
+			}
+			blocks = append(blocks, sendBlock{
+				blockType: blockType,
+				url:       value,
+				text:      text,
+			})
 		default:
 			return nil, errors.New("Unrecognized option: " + arg)
 		}
@@ -135,6 +178,7 @@ type BlockPayload struct {
 	Url       string   `json:"url,omitempty"`
 	Alt       string   `json:"alt,omitempty"`
 	Width     int      `json:"width,omitempty"`
+	Style     string   `json:"style,omitempty"`
 }
 
 type FullPayload struct {
@@ -162,6 +206,12 @@ func sendOptionsToJsonPayload(options sendOptions) ([]byte, error) {
 			blockPayload.Url = block.url
 			blockPayload.Alt = block.alt
 			blockPayload.Width = block.width
+		case BlockTypeAlert:
+			blockPayload.Text = block.text
+			blockPayload.Style = block.style
+		case BlockTypeLink:
+			blockPayload.Url = block.url
+			blockPayload.Text = block.text
 		}
 		blocks = append(blocks, blockPayload)
 	}

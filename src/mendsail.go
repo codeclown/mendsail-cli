@@ -17,17 +17,19 @@ func showHelp() error {
 		"  --subject  <string>  Subject line\n" +
 		"\n" +
 		"Blocks:\n" +
-		"  --heading            <text>\n" +
-		"  --paragraph          <text>\n" +
-		"  --list               <item1> <item2> ... <itemN>\n" +
-		"  --image              <url> [alt:text] [width:number]\n" +
+		"  --alert              <text> [style:success|warning|danger|info]\n" +
 		"  --code-block         <text>\n" +
-		"\n" +
-		"Supported environment variables:\n" +
-		"  MENDSAIL_API_KEY MENDSAIL_TO MENDSAIL_SUBJECT\n" +
+		"  --heading            <text>\n" +
+		"  --image              <url> [alt:text] [width:number]\n" +
+		"  --link               <url> [text]\n" +
+		"  --list               <item1> <item2> ... <itemN>\n" +
+		"  --paragraph          <text>\n" +
 		"\n" +
 		"Other options:\n" +
 		"  --help               Show this help message\n" +
+		"\n" +
+		"Supported environment variables:\n" +
+		"  MENDSAIL_API_KEY MENDSAIL_TO MENDSAIL_SUBJECT\n" +
 		"\n" +
 		"Links:\n" +
 		"  - Documentation:     https://mendsail.com/docs\n" +
