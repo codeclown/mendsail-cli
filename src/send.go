@@ -16,6 +16,7 @@ const BlockTypeImage = "Image"
 const BlockTypeCodeBlock = "CodeBlock"
 const BlockTypeAlert = "Alert"
 const BlockTypeLink = "Link"
+const BlockTypeButton = "Button"
 
 type sendBlock struct {
 	blockType string
@@ -25,6 +26,7 @@ type sendBlock struct {
 	style     string
 	alt       string
 	width     int
+	ghost     bool
 }
 
 type sendOptions struct {
@@ -46,12 +48,13 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 	optionToBlockType["--code-block"] = BlockTypeCodeBlock
 	optionToBlockType["--alert"] = BlockTypeAlert
 	optionToBlockType["--link"] = BlockTypeLink
+	optionToBlockType["--button"] = BlockTypeButton
 
 	for i := 0; i < len(args); i += 2 {
 		arg := args[i]
 
 		if i+1 == len(args) {
-			return nil, errors.New("Missing value for " + arg)
+			return nil, errors.New("missing value for " + arg)
 		}
 
 		value := args[i+1]
@@ -137,6 +140,42 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 			}
 			blocks = append(blocks, alertBlock)
 			i += len(alertOptions)
+		case "--button":
+			blockType := optionToBlockType[arg]
+			buttonOptions := make([]string, 0)
+			url := value
+			if i+2 == len(args) {
+				return nil, errors.New("missing button text")
+			}
+			text := args[i+2]
+			for k := i + 3; k < len(args); k += 1 {
+				if strings.HasPrefix(args[k], "--") || !strings.Contains(args[k], ":") {
+					break
+				}
+				buttonOptions = append(buttonOptions, args[k])
+			}
+			buttonBlock := sendBlock{
+				blockType: blockType,
+				url:       url,
+				text:      text,
+			}
+			for _, arg := range buttonOptions {
+				if strings.HasPrefix(arg, "style:") {
+					style := arg[6:]
+					if style != "success" && style != "warning" && style != "danger" && style != "info" {
+						return nil, errors.New("invalid style: '" + style + "' (should be one of: success, warning, danger, info)")
+					}
+					buttonBlock.style = style
+				} else if strings.HasPrefix(arg, "ghost:") {
+					value := arg[6:]
+					buttonBlock.ghost = value != "" && value != "false"
+				} else {
+					return nil, errors.New("unknown option: '" + arg + "'")
+				}
+			}
+			blocks = append(blocks, buttonBlock)
+			i += 1 // text
+			i += len(buttonOptions)
 		case "--link":
 			blockType := optionToBlockType[arg]
 			text := value

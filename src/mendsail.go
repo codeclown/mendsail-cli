@@ -18,6 +18,7 @@ func showHelp() error {
 		"\n" +
 		"Blocks:\n" +
 		"  --alert              <text> [style:success|warning|danger|info]\n" +
+		"  --button             <url> <text> [style:success|warning|danger|info] [ghost:true]\n" +
 		"  --code-block         <text>\n" +
 		"  --heading            <text>\n" +
 		"  --image              <url> [alt:text] [width:number]\n" +

@@ -17,7 +17,7 @@ func exceptOptions(t *testing.T, expected sendOptions, actual *sendOptions, err 
 		t.Errorf("sendOptions.subject: expected=%s actual=%s", expected.subject, actual.subject)
 	}
 	if len(actual.blocks) != len(expected.blocks) {
-		t.Errorf("len(actual.blocks): expected=%d actual=%d", len(actual.blocks), len(expected.blocks))
+		t.Errorf("len(actual.blocks): expected=%d actual=%d", len(expected.blocks), len(actual.blocks))
 	}
 	for i, actualBlock := range actual.blocks {
 		expectedBlock := expected.blocks[i]
@@ -27,23 +27,27 @@ func exceptOptions(t *testing.T, expected sendOptions, actual *sendOptions, err 
 		}
 		if actualBlock.text != expectedBlock.text {
 			t.Errorf("sendOptions.blocks[%d].text: expected=%s actual=%s",
-				i, actualBlock.text, expectedBlock.text)
+				i, expectedBlock.text, actualBlock.text)
 		}
 		if actualBlock.url != expectedBlock.url {
 			t.Errorf("sendOptions.blocks[%d].url: expected=%s actual=%s",
-				i, actualBlock.url, expectedBlock.url)
+				i, expectedBlock.url, actualBlock.url)
 		}
 		if !reflect.DeepEqual(actualBlock.items, expectedBlock.items) {
 			t.Errorf("sendOptions.blocks[%d].items: expected=%s actual=%s",
-				i, actualBlock.items, expectedBlock.items)
+				i, expectedBlock.items, actualBlock.items)
 		}
 		if actualBlock.alt != expectedBlock.alt {
 			t.Errorf("sendOptions.blocks[%d].alt: expected=%s actual=%s",
-				i, actualBlock.alt, expectedBlock.alt)
+				i, expectedBlock.alt, actualBlock.alt)
 		}
 		if actualBlock.width != expectedBlock.width {
 			t.Errorf("sendOptions.blocks[%d].width: expected=%d actual=%d",
-				i, actualBlock.width, expectedBlock.width)
+				i, expectedBlock.width, actualBlock.width)
+		}
+		if actualBlock.ghost != expectedBlock.ghost {
+			t.Errorf("sendOptions.blocks[%d].ghost: expected=%t actual=%t",
+				i, expectedBlock.ghost, actualBlock.ghost)
 		}
 	}
 }
@@ -95,7 +99,7 @@ func Test_parseSendArgs_MissingValue(t *testing.T) {
 		"--subject",
 	}
 	_, err := parseSendArgs(args)
-	expectError(t, "Missing value for --subject", err)
+	expectError(t, "missing value for --subject", err)
 }
 
 func Test_parseSendArgs_BlockTypes(t *testing.T) {
@@ -110,6 +114,7 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 		"--code-block", "code 1",
 		"--alert", "alert 1",
 		"--link", "https://example.com",
+		"--button", "https://example.com", "Button text",
 	}
 	expected := sendOptions{
 		apiKey:  "foobar-123",
@@ -123,6 +128,7 @@ func Test_parseSendArgs_BlockTypes(t *testing.T) {
 			sendBlock{blockType: "CodeBlock", text: "code 1"},
 			sendBlock{blockType: "Alert", text: "alert 1", style: "info"},
 			sendBlock{blockType: "Link", url: "https://example.com", text: "https://example.com"},
+			sendBlock{blockType: "Button", url: "https://example.com", text: "Button text"},
 		},
 	}
 	actual, err := parseSendArgs(args)
@@ -202,7 +208,7 @@ func Test_parseSendArgs_ImageOptions(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
-func Test_parseSendArgs_UnknownWidthType(t *testing.T) {
+func Test_parseSendArgs_UnknownImageWidthType(t *testing.T) {
 	args := []string{
 		"--api-key", "foobar-123",
 		"--to", "foobar@example.com",
@@ -284,6 +290,59 @@ func Test_parseSendArgs_LinkText(t *testing.T) {
 	actual, err := parseSendArgs(args)
 	expectNoError(t, err)
 	exceptOptions(t, expected, actual, err)
+}
+
+func Test_parseSendArgs_ButtonOptions(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--button", "https://example.com", "lorem ipsum", "style:danger", "ghost:true",
+	}
+	expected := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "foobar@example.com",
+		subject: "example 123",
+		blocks: []sendBlock{
+			sendBlock{blockType: "Button", url: "https://example.com", text: "lorem ipsum", style: "danger", ghost: true},
+		},
+	}
+	actual, err := parseSendArgs(args)
+	expectNoError(t, err)
+	exceptOptions(t, expected, actual, err)
+}
+
+func Test_parseSendArgs_UnknownMissingText(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--button", "https://example.com",
+	}
+	_, err := parseSendArgs(args)
+	expectError(t, "missing button text", err)
+}
+
+func Test_parseSendArgs_UnknownButtonOption(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--button", "https://example.com", "lorem ipsum", "foobar:danger",
+	}
+	_, err := parseSendArgs(args)
+	expectError(t, "unknown option: 'foobar:danger'", err)
+}
+
+func Test_parseSendArgs_InvalidButtonStyle(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--button", "https://example.com", "lorem ipsum", "style:foobar",
+	}
+	_, err := parseSendArgs(args)
+	expectError(t, "invalid style: 'foobar' (should be one of: success, warning, danger, info)", err)
 }
 
 func Test_validateSendOptions_Valid(t *testing.T) {
