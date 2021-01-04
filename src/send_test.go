@@ -168,6 +168,28 @@ func Test_parseSendArgs_BlockOrder(t *testing.T) {
 	exceptOptions(t, expected, actual, err)
 }
 
+func Test_parseSendArgs_Dump(t *testing.T) {
+	args := []string{
+		"--api-key", "foobar-123",
+		"--to", "foobar@example.com",
+		"--subject", "example 123",
+		"--heading", "Data processing failed",
+		"--dump",
+	}
+	expected := sendOptions{
+		apiKey:  "foobar-123",
+		to:      "foobar@example.com",
+		subject: "example 123",
+		dump:    true,
+		blocks: []sendBlock{
+			sendBlock{blockType: "Heading", text: "Data processing failed"},
+		},
+	}
+	actual, err := parseSendArgs(args)
+	expectNoError(t, err)
+	exceptOptions(t, expected, actual, err)
+}
+
 func Test_parseSendArgs_ListMultipleItems(t *testing.T) {
 	args := []string{
 		"--api-key", "foobar-123",

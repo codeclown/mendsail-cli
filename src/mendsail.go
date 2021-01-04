@@ -15,6 +15,7 @@ func showHelp() error {
 		"  --api-key  <string>  API key for authentication\n" +
 		"  --to       <string>  Recipient email address\n" +
 		"  --subject  <string>  Subject line\n" +
+		"  --dump               Dump the request JSON for debugging purposes, don't send email\n" +
 		"\n" +
 		"Blocks:\n" +
 		"  --alert              <text> [style:success|warning|danger|info]\n" +

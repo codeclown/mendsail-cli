@@ -34,6 +34,7 @@ type sendOptions struct {
 	to      string
 	subject string
 	blocks  []sendBlock
+	dump    bool
 }
 
 func parseSendArgs(args []string) (*sendOptions, error) {
@@ -52,6 +53,12 @@ func parseSendArgs(args []string) (*sendOptions, error) {
 
 	for i := 0; i < len(args); i += 2 {
 		arg := args[i]
+
+		if arg == "--dump" {
+			options.dump = true
+			i -= 1
+			continue
+		}
 
 		if i+1 == len(args) {
 			return nil, errors.New("missing value for " + arg)
@@ -293,6 +300,13 @@ func runSend(args []string) error {
 	payload, err3 := sendOptionsToJsonPayload(*options)
 	if err3 != nil {
 		return err3
+	}
+
+	if options.dump {
+		fmt.Println("Begin JSON payload")
+		fmt.Println(string(payload))
+		fmt.Println("End JSON payload")
+		return errors.New("--dump was specified, aborting after printing JSON")
 	}
 
 	apiBaseUrl := envOrDevault("MENDSAIL_BASE_URL", "https://api.mendsail.com/v1", false)
