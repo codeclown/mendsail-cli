@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,6 +36,23 @@ type sendOptions struct {
 	subject string
 	blocks  []sendBlock
 	dump    bool
+}
+
+func readStdin() (bool, []byte, error) {
+	stat, _ := os.Stdin.Stat()
+	var buf []byte
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			buf = append(buf, scanner.Bytes()...)
+			buf = append(buf, '\n')
+		}
+		if err := scanner.Err(); err != nil {
+			return true, buf, err
+		}
+		return true, buf, nil
+	}
+	return false, buf, nil
 }
 
 func parseSendArgs(args []string) (*sendOptions, error) {
@@ -283,6 +301,11 @@ func envOrDevault(envName string, defaultValue string, preferDefault bool) strin
 type runSendType func(args []string) error
 
 func runSend(args []string) error {
+	didReadStdin, stdinContent, stdinError := readStdin()
+	if stdinError != nil {
+		return stdinError
+	}
+
 	options, err1 := parseSendArgs(args)
 	if err1 != nil {
 		return err1
@@ -295,6 +318,13 @@ func runSend(args []string) error {
 	err2 := validateSendOptions(*options)
 	if err2 != nil {
 		return err2
+	}
+
+	if didReadStdin {
+		options.blocks = append(options.blocks, sendBlock{
+			blockType: "CodeBlock",
+			text:      string(stdinContent),
+		})
 	}
 
 	payload, err3 := sendOptionsToJsonPayload(*options)

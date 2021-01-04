@@ -9,7 +9,9 @@ import (
 type showHelpType func() error
 
 func showHelp() error {
-	usage := "Usage: mendsail send <options> <blocks>\n" +
+	usage := "Usage:\n" +
+		"  $ mendsail send <options> <blocks>\n" +
+		"  $ cat file.txt | mendsail send <options> <blocks>\n" +
 		"\n" +
 		"Sending options:\n" +
 		"  --api-key  <string>  API key for authentication\n" +
@@ -29,6 +31,12 @@ func showHelp() error {
 		"\n" +
 		"Other options:\n" +
 		"  --help               Show this help message\n" +
+		"\n" +
+		"stdout/stdin:\n" +
+		"  If you pipe stdout output into mendsail, that output will be appended to the\n" +
+		"  email as a CodeBlock. Example usage:\n" +
+		"    $ bash script.sh | mendsail --to admin@example.com --alert \"Script output\"\n" +
+		"    $ tail -n50 log.txt | mendsail --to admin@example.com --heading \"Recent logs\"\n" +
 		"\n" +
 		"Supported environment variables:\n" +
 		"  MENDSAIL_API_KEY MENDSAIL_TO MENDSAIL_SUBJECT\n" +
